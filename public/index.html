@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Cytoscape.js prototype</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+    <script type='text/javascript' src='js/cytoscape.min.js'></script>
+	<script type='text/javascript' src='js/cytoscape-cose-bilkent.js'></script>
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body style="position: absolute;">
+	<div id="cyContainer" style="height: 90vh; width: 100vh; border: 1px solid black;">
+		<div id="cy" style="width: 100%;"></div>
+	</div>
+	<script type='text/javascript'>
+	(function(window, undefined) {
+		var data =  {
+			nodes: [
+			  { data: { id: 'cat' } },
+			  { data: { id: 'bird' } },
+			  { data: { id: 'ladybug' } },
+			  { data: { id: 'aphid' } },
+			  { data: { id: 'rose' } },
+			  { data: { id: 'grasshopper' } },
+			  { data: { id: 'plant' } },
+			  { data: { id: 'wheat' } }
+			],
+			edges: [
+			  { data: { source: 'cat', target: 'bird' } },
+			  { data: { source: 'bird', target: 'ladybug' } },
+			  { data: { source: 'bird', target: 'grasshopper' } },
+			  { data: { source: 'grasshopper', target: 'plant' } },
+			  { data: { source: 'grasshopper', target: 'wheat' } },
+			  { data: { source: 'ladybug', target: 'aphid' } },
+			  { data: { source: 'aphid', target: 'rose' } }
+			]
+		  };
+
+		var cy = window.cy = cytoscape({
+			container: document.getElementById('cy'),
+			minZoom: .05,
+			maxZoom: 2.5,
+			style: [{
+				selector: 'node',
+				style: {
+					'background-color': 'red',
+					'shape': 'roundrectangle',
+					'width-relative-to': 'label',
+					'label': 'data(id)'
+				}
+			},
+			{
+				selector: 'edge',
+				style: {
+					'width': 1,
+					'curve-style': 'bezier',
+					'line-color': '#000000',
+					'target-arrow-color': 'black',
+					'target-arrow-shape': 'triangle'
+				}
+			},
+			{
+				selector: 'node.highlighted',
+				style: {
+					'border-color': 'yellow',
+					'border-width': 5
+				}
+			},
+			{
+				selector: 'edge.highlighted',
+				style: {
+					'line-color': 'orange',
+					'width': 4
+				}
+			}
+			],
+
+			elements: data,
+			layout: {
+				name: 'random',
+				animate: true,
+				directed: true,
+				padding: 10
+			}			
+		});
+		cy.resize();
+
+	}(window));
+	</script>
+	<script type='text/javascript'>
+	(function(window, undefined) {
+		var DemoUtil = window.DemoUtil = function(cy) {
+			this.cy = cy;
+		};
+
+		DemoUtil.prototype.Layouts = {
+			COSE: 'cose',
+			COSE_BILKENT: 'cose-bilkent',
+			RANDOM: 'random',
+			CIRCLE: 'circle',
+			GRID: 'grid'
+		};
+
+		DemoUtil.prototype.changeShape = function(shapeName, selector) {
+			selector = selector || 'node';
+			this.cy.style().selector(selector).style({ 'shape' : shapeName }).update();
+			return this;
+		};
+
+		DemoUtil.prototype.setStyle = function(style, selector) {
+			selector = selector || 'node';
+			this.cy.style().selector(selector).style(style).update();
+			return this;
+		};
+
+		DemoUtil.prototype.animateLayout = function(layoutName, options) {
+			layoutName = layoutName || 'random';
+			options = options || { name: layoutName , animate: true };
+			this.cy.layout(options).run();
+			return this;
+		};
+
+		DemoUtil.prototype.addNode = function(id, nodeData) {
+			id = id || "node" + (new Date().getTime());
+			nodeData = nodeData || { id: id };
+			this.cy.add({ id: id, data : nodeData });
+			this.cy.resize();
+			return this;
+		};
+
+		DemoUtil.prototype.allowSelect = function(isAllowed) {
+			(isAllowed ? this.cy.selectify() : this.cy.unselectify());
+			return this;
+		};
+
+		DemoUtil.prototype.allowDragView = function(isAllowed) {
+			(isAllowed ? this.cy.selectify() : this.cy.unselectify());
+			return this;
+		};
+
+		DemoUtil.prototype.highlightPath = function(algorithm, selector1, selector2, duration) {
+			(duration === undefined && (duration = 3000));
+			algorithm = algorithm || 'dijkstra';
+			selector1 = selector1 || 'node[0]';
+			selector2 = selector2 || 'node[1]';
+
+			var pathTo = this.cy.elements()[algorithm](this.cy.$(selector1)).pathTo(this.cy.$(selector2));
+
+			var nodesInPath = this.cy.$(pathTo);
+
+			this.highlight(nodesInPath, duration);
+
+			return this;
+		};
+
+		DemoUtil.clearHighlight = function(eles) {
+			if(!eles || !eles.nonempty())
+				eles = this.cy.$('.highlighted');
+			
+			eles.removeClass('highlighted');
+
+			return this;
+		};
+
+		DemoUtil.prototype.highlight = function(eles, duration) {
+			if(!eles || eles.empty()) return;
+
+			if(duration) {
+				eles.flashClass('highlighted', duration);				
+			}
+			eles.addClass('highlighted');
+
+			return this;
+		};
+
+		DemoUtil.prototype.fit = function(eles, duration) {
+			duration = duration || 1000;
+
+			if(!eles || eles.empty()) eles = this.cy.$(':visible');
+
+			this.cy.animate({
+				fit: {
+					eles: eles, padding: 50
+				}
+				}, {
+					duration: duration
+				});
+
+				return this;
+		};
+
+	}(window));
+	</script>
+	<script type='text/not-real'>
+		(function(window, cy, undefined) {
+		var demo = new DemoUtil(cy);			
+
+		demo.highlightPath('dijkstra', '#cat', '#rose', 10000);
+
+		demo.animateLayout(demo.Layouts.GRID);
+
+		demo.animateLayout(demo.Layouts.CIRCLE);
+
+		demo.highlightPath('dijkstra', '#cat', '#wheat', 10000);
+
+		demo.highlightPath('dijkstra', '#cat', '#bird', 10000);
+
+		demo.highlightPath('dijkstra', '#cat', '#plant', 10000);
+
+		demo.addNode('Cow');
+
+		demo.fit();
+
+		demo.cy.nodes().animate({
+			style: { 'background-color': 'red' }
+			}, {
+			duration: 5000,
+			complete: function(){
+				console.log('Animation complete');
+			}
+		});
+
+	}(window, window.cy));	
+	</script>
+</body>
+</html>
