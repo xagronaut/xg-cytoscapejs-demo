@@ -1,15 +1,23 @@
 (function(window, undefined) {
-	var DemoUtil = window.DemoUtil = function(cy) {
+	function DemoUtil(cy) {
 		this.cy = cy;
-	};
+	}
 
-	DemoUtil.prototype.Layouts = {
+	DemoUtil.Layouts = {
 		COSE: 'cose',
 		COSE_BILKENT: 'cose-bilkent',
 		RANDOM: 'random',
 		CIRCLE: 'circle',
 		GRID: 'grid'
 	};
+
+	DemoUtil.Algorithms = {
+		DIJKSTRA: 'dijkstra'
+	};
+
+	DemoUtil.Classes = {
+		HIGHLIGHTED: 'highlighted'
+	}
 
 	DemoUtil.prototype.changeShape = function(shapeName, selector) {
 		selector = selector || 'node';
@@ -23,25 +31,48 @@
 		return this;
 	};
 
+	DemoUtil.prototype.setImage = function(imagePath, selector) {
+		selector = selector || 'node';
+		this.cy.$(selector).data('image', imagePath);
+		this.setStyle({
+			'background-color': 'rgba(255, 255, 255, 0)',
+			'background-image': 'data(image)',
+			'background-height': 'auto',
+			'background-width': 'auto',
+			'background-clip': 'none',
+			'background-fit': 'contain',
+			'background-repeat': 'no-repeat',
+			'background-image-opacity': 1.0
+		}, selector);
+		return this;
+	}
+
 	DemoUtil.prototype.animateLayout = function(layoutName, options) {
-		layoutName = layoutName || 'random';
-		options = options || { name: layoutName , animate: true };
+		options = options || { };
+		layoutName = layoutName || DemoUtil.Layouts.RANDOM;
+		var options = Object.assign({ name: layoutName , animate: true, fit: true }, options);
 		this.cy.layout(options).run();
 		return this;
 	};
 
 	DemoUtil.prototype.addNode = function(id, nodeData) {
-		id = id || "node" + (new Date().getTime());
-		nodeData = nodeData || { id: id };
+		nodeData.id = id || "node" + (new Date().getTime());
+		nodeData = nodeData || { };
+		nodeData.id = id;
 		this.cy.add({ id: id, data : nodeData });
 		this.cy.resize();
 		return this;
 	};
 
-	DemoUtil.prototype.allowSelect = function(isAllowed) {
-		(isAllowed ? this.cy.selectify() : this.cy.unselectify());
+	DemoUtil.prototype.allowSelect = function(isAllowed, selector) {
+		var selector = selector || '*';
+		(isAllowed ? this.cy.$(selector).selectify() : this.cy.$(selector).unselectify());
 		return this;
 	};
+
+	DemoUtil.prototype.$ = function(selector) {
+		return this.cy.$(selector);
+	}
 
 	DemoUtil.prototype.allowDragView = function(isAllowed) {
 		(isAllowed ? this.cy.selectify() : this.cy.unselectify());
@@ -50,7 +81,7 @@
 
 	DemoUtil.prototype.highlightPath = function(algorithm, selector1, selector2, duration) {
 		(duration === undefined && (duration = 3000));
-		algorithm = algorithm || 'dijkstra';
+		algorithm = algorithm || DemoUtil.Algorithms.DIJKSTRA;
 		selector1 = selector1 || 'node[0]';
 		selector2 = selector2 || 'node[1]';
 
@@ -65,9 +96,9 @@
 
 	DemoUtil.clearHighlight = function(eles) {
 		if(!eles || !eles.nonempty())
-			eles = this.cy.$('.highlighted');
+			eles = this.cy.$(`.${ DemoUtil.Classes.HIGHLIGHTED }`);
 		
-		eles.removeClass('highlighted');
+		eles.removeClass(DemoUtil.Classes.HIGHLIGHTED);
 
 		return this;
 	};
@@ -76,9 +107,9 @@
 		if(!eles || eles.empty()) return;
 
 		if(duration) {
-			eles.flashClass('highlighted', duration);				
+			eles.flashClass(DemoUtil.Classes.HIGHLIGHTED, duration);				
 		}
-		eles.addClass('highlighted');
+		eles.addClass(DemoUtil.Classes.HIGHLIGHTED);
 
 		return this;
 	};
@@ -98,5 +129,7 @@
 
 			return this;
 	};
+
+	window.DemoUtil = DemoUtil;
 
 }(window));
