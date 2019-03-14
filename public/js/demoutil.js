@@ -25,7 +25,7 @@
 		return this;
 	};
 
-	DemoUtil.prototype.setStyle = function(style, selector) {
+	DemoUtil.prototype.setStyle = function(selector, style) {
 		selector = selector || 'node';
 		this.cy.style().selector(selector).style(style).update();
 		return this;
@@ -109,8 +109,51 @@
 		if(duration) {
 			eles.flashClass(DemoUtil.Classes.HIGHLIGHTED, duration);				
 		}
-		eles.addClass(DemoUtil.Classes.HIGHLIGHTED);
+		else {
+			eles.addClass(DemoUtil.Classes.HIGHLIGHTED);
+		}
 
+		return this;
+	};
+
+	function pickOne (selector) {
+		var result = null;
+		var matches = this.cy.$(selector);
+		if(matches && matches.length) {
+			result = matches[Math.floor(Math.random() * matches.length)];
+		}
+		
+		return function(ele) {
+			return ele === result;
+		};
+	}
+
+	DemoUtil.prototype.pickOne = pickOne;
+
+	DemoUtil.prototype.randomizeData = function(selector, options){
+		var defaultRandomCeiling = 30;
+		var iterations = 0;
+		var iterationHandle;
+		var randomizeOptions = this.randomizeOptions = Object.assign({ selector: selector, interval: 2000, ceiling: 100, iterations: 50, valueAttribute: 'value', valueFunc: function(ele) { return Math.ceil(Math.random() * defaultRandomCeiling); } }, (options || {}));
+		randomizeOptions.intervalHandle = iterationHandle = setInterval(function() {
+			++iterations;
+			console.log('Running ' + iterations + '...');
+			if(iterations > randomizeOptions.iterations) {
+				debugger;
+				clearInterval(iterationHandle);
+				delete randomizeOptions.iterationHandle;
+				return;
+			}
+			this.cy.$(pickOne(randomizeOptions.selector)).data(randomizeOptions.valueAttribute, randomizeOptions.valueFunc());
+		},
+			randomizeOptions.interval);
+		return this;
+	};
+
+	DemoUtil.prototype.stopRandomizing = function() {
+		var randomizeOptions = this.randomizeOptions;
+		if(!randomizeOptions || !randomizeOptions.intervalHandle) return;
+		clearInterval(randomizeOptions.intervalHandle);
 		return this;
 	};
 

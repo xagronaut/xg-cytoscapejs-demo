@@ -8,11 +8,96 @@
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body style="position: absolute;">
-	<div id="cyContainer" style="height: 90vh; width: 100vh; border: 1px solid black;">
+	<div id="cyContainer" style="height: 90vh; width: 80vh; border: 1px solid black; float: left; background-color: lightgray;">
 		<div id="cy" style="width: 100%;"></div>
 	</div>
+	<div style="overflow-y: scroll; overflow-x: hidden; height: 90vh; padding-left: 18px; position: relative;">
+<pre><code class="code-sample" data-language="javascript" data-title="dump current options">
+demo.cy.options();
+</code></pre>
+		
+<pre><code class="code-sample" data-language="javascript" data-title="grid layout">
+demo.animateLayout(DemoUtil.Layouts.GRID);
+</code></pre>
+
+<pre><code class="code-sample" data-language="javascript" data-title="make selectable">
+demo.cy.nodes().selectify();
+</code></pre>
+	
+<pre><code class="code-sample" data-language="javascript" data-title="circle layout">
+demo.animateLayout(DemoUtil.Layouts.CIRCLE);
+</code></pre>
+
+<pre><code class="code-sample" data-language="javascript" data-title="pathfinding algorithms">
+demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, '#cat', '#rose', 10000);
+demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, '#cat', '#wheat', 10000);
+demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, '#cat', '#bird', 10000);
+demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, '#cat', '#plant', 10000);
+</code></pre>
+	
+<pre><code class="code-sample" data-language="javascript" data-title="randomize arrows">
+demo.cy.$('edge').data('value', 1);
+demo.setStyle('edge', { 'width': 'data(value)' });
+demo.randomizeData('edge');
+</code></pre>
+	
+<pre><code class="code-sample" data-language="javascript" data-title="stop already!">
+demo.stopRandomizing();
+</code></pre>
+	
+<pre><code class="code-sample" data-language="javascript" data-title="add node with image">
+demo
+	.addNode('Cow', { image: 'https://openclipart.org/image/300px/svg_to_png/10205/rygle-Colour-Cows-4.png' })
+	.animateLayout(DemoUtil.Layouts.CIRCLE)
+	.fit();
+</code></pre>
+
+<pre><code class="code-sample" data-language="javascript" data-title="find paths between selected">
+demo.cy.on('select', function() {
+	var selected = demo.cy.$(':selected');
+	if(selected.size() == 2) {
+		demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, selected[0], selected[1], 5000);
+	}
+});
+</code></pre>
+
+<pre><code class="code-sample" data-language="javascript" data-title="fit">
+demo.fit();
+</code></pre>
+
+<pre><code class="code-sample" data-language="javascript" data-title="animate styles">
+demo.cy.nodes().animate({
+	style: { 'background-color': 'blue' }
+	}, {
+	duration: 5000,
+	complete: function(){
+		console.log('Animation complete');
+	}
+});
+</code></pre>
+
+<pre><code  class="code-sample" data-language="javascript" data-title="unbundled bezier">
+demo.cy.edges().style({
+	"curve-style": "unbundled-bezier",
+	"control-point-distances": [40, -40],
+	"control-point-weights": [0.250, 0.75]
+});
+</code></pre>
+
+<pre><code  class="code-sample" data-language="javascript" data-title="bezier arrows">
+demo.cy.edges().style({
+	"curve-style": "bezier",
+	"control-point-step-size": 40
+});
+</code></pre>
+
+</div>
+	<hr style="clear: both;" />
 	<script type='text/javascript'>
 	(function(window, undefined) {
+		// Note (JM, 03/13/2019): this data model was derived from this Cytoscape.js sample:
+		// http://js.cytoscape.org/demos/images-breadthfirst-layout/
+
 		var data =  {
 			nodes: [
 			  { data: { id: 'cat' } },
@@ -117,45 +202,30 @@
 	}(window));
 	</script>
 	<script type='text/javascript' src='js/demoutil.js'></script>
-	<script type='text/not-real'>
+	<script type='text/javascript'>
 		(function(window, cy, undefined) {
-		var demo = new DemoUtil(cy);			
+		var demo = window.demo = new DemoUtil(cy);			
 
-		demo.cy.options();
+		function each(items, func) { return [].slice.call(items, null).forEach(func); }
 
-		demo.highlightPath('dijkstra', '#cat', '#rose', 10000);
+		each(document.querySelectorAll('.code-sample'), function(item){
+			var code = item.innerText;
+			var btn, btnSpan, hdr, hdrText;
 
-		demo.animateLayout(demo.Layouts.GRID);
+			var newDiv = document.createElement('div');
+			newDiv.appendChild((hdr = document.createElement('h1')));
+			hdr.appendChild((hdrText = document.createElement('span')));
+			hdr.appendChild((btn = document.createElement('button')));
 
-		demo.animateLayout(demo.Layouts.CIRCLE);
+			item.parentNode.parentNode.insertBefore(newDiv, item.parentNode);
 
-		demo.highlightPath('dijkstra', '#cat', '#wheat', 10000);
-
-		demo.highlightPath('dijkstra', '#cat', '#bird', 10000);
-
-		demo.highlightPath('dijkstra', '#cat', '#plant', 10000);
-
-		demo.addNode('Cow', { image: 'https://openclipart.org/image/300px/svg_to_png/10205/rygle-Colour-Cows-4.png' });
-
-		demo.cy.on('select', function() {
-			var selected = demo.cy.$(':selected');
-			if(selected.size() == 2) {
-				demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, selected[0], selected[1], 5000);
-			}
+			hdrText.innerText = item.getAttribute('data-title');
+			hdrText.style.display = 'inline-block';
+			btn.innerText = 'Execute!';
+			btn.onclick = function() { console.dir(eval(code)); }
 		});
-
-		demo.fit();
-
-		demo.cy.nodes().animate({
-			style: { 'background-color': 'red' }
-			}, {
-			duration: 5000,
-			complete: function(){
-				console.log('Animation complete');
-			}
-		});
-
-	}(window, window.cy));	
+		
+		}(window, window.cy));
 	</script>
 </body>
 </html>
