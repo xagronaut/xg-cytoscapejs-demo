@@ -8,52 +8,74 @@
     <link rel="stylesheet" type="text/css" href="css/style.css">
 </head>
 <body style="position: absolute;">
-	<div id="cyContainer" style="height: 90vh; width: 80vh; border: 1px solid black; float: left; background-color: lightgray;">
+	<div id="cyContainer" style="height: 90vh; width: 50vw; border: 1px solid black; float: left; background-color: white;">
 		<div id="cy" style="width: 100%;"></div>
 	</div>
-	<div style="overflow-y: scroll; overflow-x: hidden; height: 90vh; padding-left: 18px; position: relative;">
-<pre><code class="code-sample" data-language="javascript" data-title="dump current options">
-demo.cy.options();
-</code></pre>
-		
-<pre><code class="code-sample" data-language="javascript" data-title="grid layout">
-demo.animateLayout(DemoUtil.Layouts.GRID);
+	<div id="samples" style="overflow-y: scroll; overflow-x: hidden; height: 90vh; padding-left: 18px; position: relative;">
+<h1>Layouts</h1>
+<pre class="code-sample"><code data-language="javascript" data-title="random layout">demo.animateLayout(DemoUtil.Layouts.RANDOM);
 </code></pre>
 
-<pre><code class="code-sample" data-language="javascript" data-title="make selectable">
-demo.cy.nodes().selectify();
-</code></pre>
-	
-<pre><code class="code-sample" data-language="javascript" data-title="circle layout">
-demo.animateLayout(DemoUtil.Layouts.CIRCLE);
+<pre class="code-sample"><code data-language="javascript" data-title="grid layout">demo.animateLayout(DemoUtil.Layouts.GRID);
 </code></pre>
 
-<pre><code class="code-sample" data-language="javascript" data-title="pathfinding algorithms">
-demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, '#cat', '#rose', 10000);
-demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, '#cat', '#wheat', 10000);
-demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, '#cat', '#bird', 10000);
-demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, '#cat', '#plant', 10000);
+<pre class="code-sample"><code data-language="javascript" data-title="circle layout">demo.animateLayout(DemoUtil.Layouts.CIRCLE);
 </code></pre>
-	
-<pre><code class="code-sample" data-language="javascript" data-title="randomize arrows">
-demo.cy.$('edge').data('value', 1);
+
+<h1>Visual Style</h1>
+<pre class="code-sample"><code data-language="javascript" data-title="randomize shape">var shapes=['ellipse', 'triangle', 'rectangle', 'round-rectangle', 'bottom-round-rectangle', 'cut-rectangle', 'barrel', 'rhomboid'
+, 'diamond', 'pentagon', 'hexagon', 'concave-hexagon', 'heptagon', 'octagon', 'star', 'tag', 'vee'];
+
+var shapeToUse = shapes[Math.floor(Math.random() * shapes.length)];
+
+demo.setStyle('node', { shape: shapeToUse });
+</code></pre>
+
+<pre class="code-sample"><code data-language="javascript" data-title="randomize arrows">demo.cy.$('edge').data('value', 1);
 demo.setStyle('edge', { 'width': 'data(value)' });
-demo.randomizeData('edge');
+demo.randomizeData('edge', { interval: 1000 });
+</code></pre>
+
+<pre class="code-sample"><code data-language="javascript" data-title="stop already!">demo.stopRandomizing();
+</code></pre>
+
+<h1>Selections</h1>
+<pre class="code-sample"><code data-language="javascript" data-title="make selectable">emo.cy.nodes().selectify();
 </code></pre>
 	
-<pre><code class="code-sample" data-language="javascript" data-title="stop already!">
-demo.stopRandomizing();
+<pre class="code-sample"><code data-language="javascript" data-title="hide selected">demo.cy.$(':selected').hide();
 </code></pre>
 	
-<pre><code class="code-sample" data-language="javascript" data-title="add node with image">
-demo
+<pre class="code-sample"><code data-language="javascript" data-title="show all">demo.cy.$('*').show();
+</code></pre>
+
+<h1>Edges</h1>
+<pre class="code-sample"><code data-language="javascript" data-title="set label data">demo.cy.$('edge').data({'label': 'EATS'});
+
+demo.cy.style().selector('edge').style({
+	'label' : 'data(label)',
+	'text-background-color': 'blue',
+	'color': 'white',
+	'text-background-opacity': 0.6,
+	'text-background-padding': '5px'
+}).update();
+</code></pre>
+
+<h1>Algorithms</h1>
+<pre class="code-sample"><code data-language="javascript" data-title="pathfinding algorithms (Dijkstra)">demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, '#cat', '#rose', 10000);
+</code></pre>
+	
+<pre class="code-sample"><code data-language="javascript" data-title="pathfinding algorithms (A-Star)">var aStar = demo.cy.elements().aStar({ root: "#cat", goal: "#plant" });
+aStar.path.select().toggleClass(DemoUtil.Classes.HIGHLIGHTED);
+</code></pre>
+	
+<pre class="code-sample"><code data-language="javascript" data-title="add node with image">demo
 	.addNode('Cow', { image: 'https://openclipart.org/image/300px/svg_to_png/10205/rygle-Colour-Cows-4.png' })
 	.animateLayout(DemoUtil.Layouts.CIRCLE)
 	.fit();
 </code></pre>
 
-<pre><code class="code-sample" data-language="javascript" data-title="find paths between selected">
-demo.cy.on('select', function() {
+<pre class="code-sample"><code data-language="javascript" data-title="find paths between selected">demo.cy.on('select', function() {
 	var selected = demo.cy.$(':selected');
 	if(selected.size() == 2) {
 		demo.highlightPath(DemoUtil.Algorithms.DIJKSTRA, selected[0], selected[1], 5000);
@@ -61,12 +83,11 @@ demo.cy.on('select', function() {
 });
 </code></pre>
 
-<pre><code class="code-sample" data-language="javascript" data-title="fit">
-demo.fit();
+<h1>Animation</h1>
+<pre class="code-sample"><code data-language="javascript" data-title="fit">demo.fit();
 </code></pre>
 
-<pre><code class="code-sample" data-language="javascript" data-title="animate styles">
-demo.cy.nodes().animate({
+<pre class="code-sample"><code data-language="javascript" data-title="animate styles">demo.cy.nodes().animate({
 	style: { 'background-color': 'blue' }
 	}, {
 	duration: 5000,
@@ -76,21 +97,25 @@ demo.cy.nodes().animate({
 });
 </code></pre>
 
-<pre><code  class="code-sample" data-language="javascript" data-title="unbundled bezier">
-demo.cy.edges().style({
+<pre class="code-sample"><code data-language="javascript" data-title="unbundled bezier">demo.cy.edges().style({
 	"curve-style": "unbundled-bezier",
 	"control-point-distances": [40, -40],
 	"control-point-weights": [0.250, 0.75]
 });
 </code></pre>
 
-<pre><code  class="code-sample" data-language="javascript" data-title="bezier arrows">
-demo.cy.edges().style({
+<pre class="code-sample"><code data-language="javascript" data-title="bezier arrows">demo.cy.edges().style({
 	"curve-style": "bezier",
 	"control-point-step-size": 40
 });
 </code></pre>
 
+<pre class="code-sample"><code data-language="javascript" data-title="dump current options">demo.cy.options();
+</code></pre>
+			
+<pre class="code-sample"><code data-language="javascript" data-title="download image">demo.downloadImage();
+</code></pre>
+	
 </div>
 	<hr style="clear: both;" />
 	<script type='text/javascript'>
@@ -123,7 +148,7 @@ demo.cy.edges().style({
 		var cy = window.cy = cytoscape({
 			container: document.getElementById('cy'),
 			minZoom: .5,
-			maxZoom: 2.5,
+			maxZoom: 4,
 			style: [{
 				selector: 'node',
 				style: {
@@ -208,12 +233,13 @@ demo.cy.edges().style({
 
 		function each(items, func) { return [].slice.call(items, null).forEach(func); }
 
-		each(document.querySelectorAll('.code-sample'), function(item){
+		each(document.querySelectorAll('.code-sample code'), function(item){
 			var code = item.innerText;
 			var btn, btnSpan, hdr, hdrText;
 
 			var newDiv = document.createElement('div');
-			newDiv.appendChild((hdr = document.createElement('h1')));
+			newDiv.style.zoom = 1.2;
+			newDiv.appendChild((hdr = document.createElement('h2')));
 			hdr.appendChild((hdrText = document.createElement('span')));
 			hdr.appendChild((btn = document.createElement('button')));
 
@@ -222,6 +248,8 @@ demo.cy.edges().style({
 			hdrText.innerText = item.getAttribute('data-title');
 			hdrText.style.display = 'inline-block';
 			btn.innerText = 'Execute!';
+			btn.style.marginLeft = '12px';
+			btn.style.verticalAlign = 'middle';
 			btn.onclick = function() { console.dir(eval(code)); }
 		});
 		

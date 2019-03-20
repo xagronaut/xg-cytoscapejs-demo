@@ -12,7 +12,8 @@
 	};
 
 	DemoUtil.Algorithms = {
-		DIJKSTRA: 'dijkstra'
+		DIJKSTRA: 'dijkstra',
+		ASTAR: 'aStar'
 	};
 
 	DemoUtil.Classes = {
@@ -79,6 +80,12 @@
 		return this;
 	};
 
+	DemoUtil.prototype.getNodeAndNeighbors = function(selector) {
+		var result = this.cy.$(selector || 'node');
+		result = result.union(result.neighborhood());
+		return result;
+	};
+
 	DemoUtil.prototype.highlightPath = function(algorithm, selector1, selector2, duration) {
 		(duration === undefined && (duration = 3000));
 		algorithm = algorithm || DemoUtil.Algorithms.DIJKSTRA;
@@ -138,13 +145,12 @@
 		randomizeOptions.intervalHandle = iterationHandle = setInterval(function() {
 			++iterations;
 			console.log('Running ' + iterations + '...');
+			this.cy.$(pickOne(randomizeOptions.selector)).data(randomizeOptions.valueAttribute, randomizeOptions.valueFunc());
 			if(iterations > randomizeOptions.iterations) {
-				debugger;
 				clearInterval(iterationHandle);
 				delete randomizeOptions.iterationHandle;
 				return;
 			}
-			this.cy.$(pickOne(randomizeOptions.selector)).data(randomizeOptions.valueAttribute, randomizeOptions.valueFunc());
 		},
 			randomizeOptions.interval);
 		return this;
@@ -154,8 +160,26 @@
 		var randomizeOptions = this.randomizeOptions;
 		if(!randomizeOptions || !randomizeOptions.intervalHandle) return;
 		clearInterval(randomizeOptions.intervalHandle);
+		delete randomizeOptions.iterationHandle;
 		return this;
 	};
+
+	function downloadData(href, downloadName) {
+		var downloadLink = document.createElement('a');
+		downloadLink.setAttribute('href', href);
+		downloadLink.setAttribute('download', downloadName);
+		downloadLink.setAttribute('style', 'visibility: hidden; height: 1px; width: 1px;');
+		var body = document.querySelector('body');
+		body.appendChild(downloadLink);
+		downloadLink.click();
+		body.removeChild(downloadLink);
+	}
+
+	DemoUtil.prototype.downloadImage = function() {
+		var canvas = document.querySelector('[data-id="layer2-node"]');
+		var imageDataUrl = canvas.toDataURL('image/png');
+		downloadData(imageDataUrl, 'diagram.png');
+	}
 
 	DemoUtil.prototype.fit = function(eles, duration) {
 		duration = duration || 1000;
